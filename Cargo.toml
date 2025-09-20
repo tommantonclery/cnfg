@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "cnfg",
+    "cnfg-core",
+    "cnfg-derive",
+    "cnfg-sources",
+    "cnfg-validate",
+    "cnfg-examples",
+]
+resolver = "2"
