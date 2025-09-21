@@ -1,0 +1,5 @@
+name: yaml-demo
+debug: true
+database:
+  host: yaml-database.local
+  port: 7000

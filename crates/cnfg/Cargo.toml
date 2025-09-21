@@ -1,0 +1,36 @@
+[package]
+name = "cnfg"
+version = "0.1.1"
+edition = "2024"
+description = "Unified, validated configuration for Rust"
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/tommantonclery/cnfg"
+homepage = "https://github.com/tommantonclery/cnfg"
+documentation = "https://docs.rs/cnfg"
+keywords = ["configuration", "cli", "env", "serde", "derive"]
+categories = ["config"]
+
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = { version = "0.9", optional = true }
+toml = { version = "0.8", optional = true }
+thiserror = "1"
+regex = "1"
+url = "2"
+dotenvy = "0.15"
+
+
+# For derived macro users: re-export the derive so they can `#[derive(Cnfg)]`
+cnfg-derive = { version = "0.1.1", path = "../cnfg-derive" }
+
+[features]
+default = ["toml", "yaml", "json"]
+toml = ["dep:toml"]
+yaml = ["dep:serde_yaml"]
+json = []
+
+[dev-dependencies]
+tempfile = "3"
