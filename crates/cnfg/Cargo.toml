@@ -21,10 +21,7 @@ thiserror = "1"
 regex = "1"
 url = "2"
 dotenvy = "0.15"
-
-
-# For derived macro users: re-export the derive so they can `#[derive(Cnfg)]`
-cnfg-derive = { version = "0.1.1", path = "../cnfg-derive" }
+cnfg-derive = "0.1.1"
 
 [features]
 default = ["toml", "yaml", "json"]
