@@ -1,44 +1,48 @@
 # cnfg
 
-cnfg lets you describe your application's configuration once and load it from files, environment variables, and CLI flags with compile-time guarantees. Derive the `Cnfg` macro on a normal `serde` struct and the crate handles source precedence, deserialization, validation, and help text for you.
+**cnfg** is a declarative configuration framework for Rust.
+Describe your configuration once with normal structs, derive the `Cnfg` macro, and load values from **files**, **environment variables**, and **CLI flags** — with validation, schema metadata, and help text built in.
 
-## Highlights
-- Define your schema with plain Rust structs and `#[derive(Cnfg)]`
-- Merge defaults, config files, environment variables, and CLI flags in a predictable order
-- Generate `--help` output automatically from doc comments and annotations
-- Validate inputs with built-in range/regex/url checks or custom logic
-- Compose nested configs without boilerplate and surface rich error messages
+## ✨ Highlights
 
-## Install
-Add the library crate to your `Cargo.toml` (the derive macro is re-exported, no extra dependency required):
+* Define your schema with plain Rust structs and `#[derive(Cnfg)]`
+* Merge defaults, config files, environment variables, and CLI flags in a predictable order
+* Generate `--help` output automatically from doc comments and annotations
+* Validate inputs with built-in checks (range, regex, URL) or custom logic
+* Compose nested configs without boilerplate and surface rich error messages
+
+## 📦 Installation
+
+Add the crate to your `Cargo.toml` (the derive macro is re-exported — no extra dependency needed):
 
 ```toml
 [dependencies]
 cnfg = { version = "0.1.1", features = ["yaml", "toml"] }
 ```
 
-You can also use `cargo add`:
+Or use `cargo add`:
 
 ```bash
 cargo add cnfg --features yaml,toml
 ```
 
-Feature flags are optional:
+### Feature Flags
 
-| Feature | Default? | Purpose |
-|---------|----------|---------|
-| `yaml`  | ✅       | Enable loading `config.yaml` / `config.yml` files |
-| `toml`  | ✅       | Enable loading `config.toml` files |
-| `json`  | ✅       | Enable loading `config.json` files |
+| Feature | Default | Purpose                                 |
+| ------- | ------- | --------------------------------------- |
+| `yaml`  | ✅       | Load `config.yaml` / `config.yml` files |
+| `toml`  | ✅       | Load `config.toml` files                |
+| `json`  | ✅       | Load `config.json` files                |
 
-Disable features if you want a smaller dependency tree:
+To minimize dependencies:
 
 ```toml
 cnfg = { version = "0.1.1", default-features = false, features = ["toml"] }
 ```
 
-## Define and Load Configuration
-Create a normal `serde` struct, derive `Cnfg`, and annotate each field with the sources you care about.
+## 🚀 Define and Load Configuration
+
+Configuration is just a `serde` struct with annotations:
 
 ```rust
 use cnfg::{Cnfg, CnfgError};
@@ -66,31 +70,35 @@ fn main() -> Result<(), CnfgError> {
 }
 ```
 
-The generated loader combines all sources in the following order (later sources win):
+### Source Precedence
+
+When loading, cnfg merges sources in this order (later overrides earlier):
 
 1. Struct defaults & `#[cnfg(default = ...)]`
-2. Parsed config file (`CONFIG_FILE` env override or `config.{toml,yaml,json}`)
+2. Config file (`CONFIG_FILE` override or `config.{toml,yaml,json}`)
 3. Environment variables declared with `#[cnfg(env = "NAME")]`
-4. Command line flags declared with `#[cnfg(cli)]`
+4. Command-line flags declared with `#[cnfg(cli)]`
 
-Missing required values surface as `CnfgError::Validation` with field-qualified error messages.
+Missing required values result in `CnfgError::Validation` with field-qualified error messages.
 
-## CLI Help for Free
-Doc comments flow into the generated CLI help. Call `AppConfig::help()` or run your binary with `--help` to see output like:
+## 🛠 CLI Help for Free
+
+Doc comments flow into the generated help output:
 
 ```
 Usage:
   <binary> [OPTIONS]
 
 Options:
-  --name <value>            Name used for logging and help output [default: demo-app]
-  --debug                   Toggle verbose logging (--debug or DEBUG=true)
+  --name <value>    Name used for logging and help output [default: demo-app]
+  --debug           Toggle verbose logging (--debug or DEBUG=true)
 ```
 
-When users pass `--help`, cnfg prints the help text and returns `CnfgError::HelpPrinted` so you can exit gracefully.
+Running with `--help` prints usage and returns `CnfgError::HelpPrinted` so your program can exit gracefully.
 
-## Nested Configurations
-Break large configs into focused structs. Mark nested fields with `#[cnfg(nested)]` and use `#[serde(default)]` when the child implements `Default`.
+## 🧩 Nested Configurations
+
+Split large configs into smaller pieces with `#[cnfg(nested)]`:
 
 ```rust
 #[derive(Debug, Serialize, Deserialize, Cnfg)]
@@ -110,10 +118,11 @@ struct AppConfig {
 }
 ```
 
-Nested required fields are tracked automatically (e.g. `database.host`) and validation errors are surfaced with fully-qualified paths.
+Errors are tracked with fully-qualified paths (e.g. `database.host`).
 
-## Validation Helpers
-The derive macro ships with common validators:
+## ✅ Validation
+
+Built-in validators:
 
 ```rust
 #[derive(Debug, Serialize, Deserialize, Cnfg)]
@@ -129,21 +138,27 @@ struct Limits {
 }
 ```
 
-For custom checks, implement `Validate` manually or extend with `#[cnfg(validate(custom_fn = "path::to::fn"))]` (coming soon).
+Custom validation is possible via manual `Validate` impls. Attribute-based custom functions (`#[cnfg(validate(custom_fn = "..."))]`) are on the roadmap.
 
-## Environment and Testing Tips
-- Use `dotenvy` support by dropping a `.env` file next to your binary—cnfg will load it automatically.
-- In tests, guard environment mutations with a mutex to avoid cross-test interference (see `crates/cnfg/tests/nested.rs`).
-- Call `AppConfig::defaults_json()` in unit tests to assert default shapes without touching real files.
+## 🧪 Tips & Testing
 
-## Examples
-A runnable example lives in [`examples/tester`](https://github.com/tommantonclery/cnfg/tree/main/examples/tester). It showcases nested configs, CLI help, and validation.
+* `.env` files are auto-loaded via `dotenvy`.
+* In tests, guard environment changes with a mutex to avoid cross-test interference.
+* Use `AppConfig::defaults_json()` to inspect defaults without touching real files.
 
-## Minimum Supported Rust Version (MSRV)
-The crate targets Rust 1.70.0 or newer (for `OnceLock`). CI and docs assume the 2021 edition.
+## 📚 Examples
 
-## Status
-The library is production-ready for building internal tools and services. Feedback is welcome—open an issue or discussion on [GitHub](https://github.com/tommantonclery/cnfg).
+A runnable demo lives in [`examples/tester`](https://github.com/tommantonclery/cnfg/tree/main/examples/tester).
+It shows nested configs, CLI help, and validation in action.
 
-## License
-Licensed under the [Apache License, Version 2.0](LICENSE).
+## 🔧 MSRV
+
+Requires **Rust 1.85.0+** (for `OnceLock`). Uses the **2024 edition**.
+
+## 📊 Status
+
+Stable for building internal tools and services. Feedback and contributions are welcome — open an issue or discussion on [GitHub](https://github.com/tommantonclery/cnfg).
+
+## 📄 License
+
+Licensed under the [Apache License, Version 2.0](https://github.com/tommantonclery/cnfg/blob/main/LICENSE).
